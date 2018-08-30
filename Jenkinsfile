@@ -1,10 +1,14 @@
 pipeline {
-  agent any
+  agent {
+    label 'jdk8'
+  }
   stages {
     stage('Say Hello') {
       steps {
-        echo 'Hello World!'
+        echo "Hello ${params.Name}!"
         sh 'java -version'
+        echo "${TEST_USER_USR}"
+        echo "${TEST_USER_PSW}"
       }
     }
     stage('Testing') {
@@ -30,23 +34,19 @@ pipeline {
         }
       }
     }
-    stage('Get Kernel') {
-      steps {
-        script {
-          try {
-            KERNEL_VERSION = sh (script: "uname -r", returnStdout: true)
-          } catch(err) {
-            echo "CAUGHT ERROR: ${err}"
-            throw err
-          }
-        }
+  }
+  environment {
+    MY_NAME = 'Mary'
+    TEST_USER = credentials('test-user')
+  }
+  post {
+    aborted {
+      echo 'Why didn\'t you push my button?'
 
-      }
     }
-    stage('Say Kernel') {
-      steps {
-        echo "${KERNEL_VERSION}"
-      }
-    }
+
+  }
+  parameters {
+    string(name: 'Name', defaultValue: 'whoever you are', description: 'Who should I say hi to?')
   }
 }
